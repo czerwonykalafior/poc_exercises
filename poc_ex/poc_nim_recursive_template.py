@@ -18,11 +18,11 @@ def evaluate_position(current_num):
     """
     global counter
     counter += 1
-
-    # enter code here
-
+    for removed_num in range(1, min(MAX_REMOVE + 1, current_num + 1)):
+        new_num = current_num - removed_num
+        if evaluate_position(new_num) == "lost":
+            return "won"
     return "lost"
-
 
 def run_standard(items):
     """
