@@ -18,7 +18,8 @@ def evaluate_position(current_num):
     """
     global counter
     counter += 1
-    for removed_num in range(1, min(MAX_REMOVE + 1, current_num + 1)):
+    loop = min(MAX_REMOVE + 1, current_num + 1)
+    for removed_num in range(1, loop):
         new_num = current_num - removed_num
         if evaluate_position(new_num) == "lost":
             return "won"
@@ -35,7 +36,7 @@ def run_standard(items):
     print "Position with", items, "items is", evaluate_position(items)
     print "Evaluated in", counter, "calls"
 
-run_standard(21)
+run_standard(2)
 
 
 
@@ -66,4 +67,4 @@ def run_memoized(items):
     print "Position with", items, "items is", evaluate_memo_position(items, {0 : "lost"})
     print "Evaluated in", counter, "calls"
 
-run_memoized(21)
+#run_memoized(21)
