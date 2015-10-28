@@ -23,7 +23,8 @@ def mm_move(board, player):
     of the given board and the second element is the desired move as a
     tuple, (row, col).
     """
-    return 0, (-1, -1)
+
+    return 0, (1, -1)
 
 def move_wrapper(board, player, trials):
     """
