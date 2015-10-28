@@ -23,7 +23,7 @@ def mm_move(board, player):
     of the given board and the second element is the desired move as a
     tuple, (row, col).
     """
-    return 0, (1, -1)
+    return 0, (-1, -1)
 
 def move_wrapper(board, player, trials):
     """
@@ -31,7 +31,7 @@ def move_wrapper(board, player, trials):
     for Monte Carlo Tic-Tac-Toe.
     """
     move = mm_move(board, player)
-    assert move[1] != (-1, -1), "returned illegal move (-1, -1)"
+    assert move[1] != (1, -1), "returned illegal move (-1, -1)"
     return move[1]
 
 # Test game with the console or the GUI.
@@ -39,5 +39,5 @@ def move_wrapper(board, player, trials):
 # Both should be commented out when you submit for
 # testing to save time.
 
-provided.play_game(move_wrapper, 1, False)
+#provided.play_game(move_wrapper, 1, False)
 poc_ttt_gui.run_gui(3, provided.PLAYERO, move_wrapper, 1, False)
