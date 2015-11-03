@@ -24,66 +24,46 @@ def mm_move(board, player):
     tuple, (row, col).
     """
 
-    print board
+    result = minimax(board,player)
+    # if player == provided.PLAYERX:
+    #     result = sorted(result, reverse= True)
+    #
+    # else:
+    #     result = sorted(result)
+    return result
 
-    possible_moves = board.get_empty_squares()
-    print possible_moves
-    best_move = (-1,-1)
-    best_score = float('-inf')
 
-    for possible_move in possible_moves:
-        temp_board = board.clone()
-        temp_board.move(possible_move[0], possible_move[1], player)
+def minimax(board, player, lvl = 0 ):
+    score_possible_move = []
+    result = []
+    if len(board.get_empty_squares()) == 0:
+        return (0, (-1, -1))
+    else:
 
-        score = max_play(temp_board, player)
-        print score, possible_move, player
-        if score > best_score:
-            print "s", possible_move
-            best_move = possible_move
-            best_score = score
-        # if player == 2:
-        #     if score > best_score:
-        #         print "x", possible_move
-        #         best_move = possible_move
-        #         best_score = score
-        # elif player == 3:
-        #     if score < best_score:
-        #         print "o", possible_move
-        #         best_move = possible_move
-        #         best_score = score
+        empty_squares = board.get_empty_squares()
+        for empty_square in empty_squares:
 
-    return best_score, best_move
+            print empty_square
+            clone_board = board.clone()
+            # print clone_board
+            clone_board.move(empty_square[0], empty_square[1], player)
 
-def min_play(board, player):
-    if board.check_win():
-        return SCORES[board.check_win()]
-    moves = board.get_empty_squares()
-    best_move = moves[0]
-    best_score = float('inf')
-    for move in moves:
-        clone = board.clone()
-        clone.move(move[0], move[1], player)
-        score = max_play(clone, provided.switch_player(player))
-        if score < best_score:
-            best_move = move
-            best_score = score
-    return best_score
+            if clone_board.check_win() != None:
+                print "end", clone_board.check_win()
+                print clone_board
+                score_possible_move.extend([(SCORES[clone_board.check_win()], empty_square)])
+                print "result:", score_possible_move, lvl
+                if player == provided.PLAYERX:
+                    result = sorted(score_possible_move, reverse= True)
+                    print "res", result[0]
+                else:
+                    result = sorted(score_possible_move)
+                    print "res", result[0]
+            else:
+                score_possible_move.extend(minimax(clone_board, provided.switch_player(player)))
 
-def max_play(board, player):
-    print board
-    if board.check_win():
-        return SCORES[board.check_win()]
-    moves = board.get_empty_squares()
-    best_move = moves[0]
-    best_score = float('-inf')
-    for move in moves:
-        clone = board.clone()
-        clone.move(move[0], move[1], player)
-        score = min_play(clone, provided.switch_player(player))
-        if score > best_score:
-            best_move = move
-            best_score = score
-    return best_score
+        return score_possible_move
+
 
 def move_wrapper(board, player, trials):
     """
@@ -98,11 +78,11 @@ def move_wrapper(board, player, trials):
 # Uncomment whichever you prefer.
 # Both should be commented out when you submit for
 # testing to save time.
-list_board = [[3,3,1],[1,2,2],[1,1,1]]
+list_board = [[3,2,1],[3,2,1],[1,3,2]]
 board1 = provided.TTTBoard(3, False,list_board)
 
-print "move"
-print mm_move(board1, provided.PLAYERX)
-
+print "Start"
+t = mm_move(board1, provided.PLAYERX)
+print "Output:", t
 # provided.play_game(move_wrapper, 1, False)
 # poc_ttt_gui.run_gui(3, provided.PLAYERO, move_wrapper, 1, False)
