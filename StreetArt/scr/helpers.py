@@ -58,7 +58,7 @@ EMPTY = 0
 FULL = 1
 
 
-class Grid:
+class Grid(object):
     """
     Implementation of 2D grid of cells
     Includes boundary handling
@@ -127,6 +127,31 @@ class Grid:
         """
         return self._cells[row][col] == EMPTY
 
+    def set_val(self, row, col, val):
+        """
+        Setting
+        :param row:
+        :param col:
+        :param val:
+        """
+        self._cells[row][col] = val
+
+    def get_val(self, row, col):
+        """
+        Returning the value
+        :param row:
+        :param col:
+        """
+        return self._cells[row][col]
+
+    def set_all_val_to(self, val):
+        """
+        Fill grid with given value
+        :param val:
+        """
+        self._cells = [[val for _ in range(self._grid_width)]
+                       for _ in range(self._grid_height)]
+
     def four_neighbors(self, row, col):
         """
         Returns horiz/vert neighbors of cell (row, col)
@@ -169,6 +194,12 @@ class Grid:
         if (row < self._grid_height - 1) and (col < self._grid_width - 1):
             ans.append((row + 1, col + 1))
         return ans
+
+    def clone(self):
+        """
+        Return a copy of the grid.
+        """
+        return Grid(self._grid_height, self._grid_width)
 
     @staticmethod
     def get_index(point, cell_size):

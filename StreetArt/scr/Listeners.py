@@ -17,6 +17,7 @@ class Listener(object):
         self.speed = speed
         self.cash = cash
         self.probability = probability
+        self.position = [0][0]
 
     def __str__(self):
         pp_listener = "And his name will be: %s.\nGenre: %s, Speed: %i, cash: %i$, Probability: %.2f"\
@@ -25,14 +26,15 @@ class Listener(object):
 
     def give_money(self, in_range, genre):
         """
-        Give money if have any to a musician- as long as he can hear it and a musician is playing
+        Check if he can hear the music and a musician is playing his genre
         :param genre: bool
-        :param in_range: bool
+        :param in_range: value from 'distance map' (:return gamemap.GameMap.players_audibility)
         """
 
         if in_range and genre:
             self.cash -= 10
         return
+
 
     def move(speed):
         """

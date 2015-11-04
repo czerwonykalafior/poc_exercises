@@ -1,6 +1,8 @@
 """
 Player
 """
+import pprint
+
 __author__ = 'CzerwonyKalafior'
 __project__ = 'StreetArt'
 
@@ -42,3 +44,23 @@ class Player:
         self.volume = {CLASSIC: 1,
                        ACOUSTIC: 0,
                        AMP: 0}
+
+        self.now_playing = TECHNO
+
+    def __str__(self):
+        """
+        Override __str__ method
+        """
+        pp = pprint.PrettyPrinter(indent=4)
+        return str(pp.pprint(STRMAP))
+
+    def change_genre(self, genre):
+        """
+        Change actual genre
+        :param genre:
+        :return:
+        """
+        self.now_playing = genre
+
+player1 = Player()
+print player1
