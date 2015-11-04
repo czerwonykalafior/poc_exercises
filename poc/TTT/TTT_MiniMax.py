@@ -41,26 +41,27 @@ def minimax(board, player, lvl = 0 ):
     else:
 
         empty_squares = board.get_empty_squares()
-        for empty_square in empty_squares:
+        for possible_move in empty_squares:
 
-            print empty_square
+            print possible_move
             clone_board = board.clone()
             # print clone_board
-            clone_board.move(empty_square[0], empty_square[1], player)
+            clone_board.move(possible_move[0], possible_move[1], player)
 
             if clone_board.check_win() != None:
                 print "end", clone_board.check_win()
                 print clone_board
-                score_possible_move.extend([(SCORES[clone_board.check_win()], empty_square)])
-                print "result:", score_possible_move, lvl
+                score_possible_move.extend([(SCORES[clone_board.check_win()], possible_move)])
+                print "result:", score_possible_move, player
                 if player == provided.PLAYERX:
                     result = sorted(score_possible_move, reverse= True)
-                    print "res", result[0]
+                    score_possible_move = result[0]
+
                 else:
                     result = sorted(score_possible_move)
-                    print "res", result[0]
+                    score_possible_move = result[0]
             else:
-                score_possible_move.extend(minimax(clone_board, provided.switch_player(player)))
+                score_possible_move.append(minimax(clone_board, provided.switch_player(player)))
 
         return score_possible_move
 
