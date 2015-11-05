@@ -24,11 +24,11 @@ def mm_move(board, player):
     tuple, (row, col).
     """
     # print board
-
+    print SCORES[player]
     if board.check_win() != None:
         return (SCORES[board.check_win()], None)
     elif player == provided.PLAYERX:
-        best = (-2, None)
+        best = ( -2, None)
         empty_squers = board.get_empty_squares()
         for possible_move in empty_squers:
             clone = board.clone()
@@ -65,11 +65,11 @@ def move_wrapper(board, player, trials):
 # Uncomment whichever you prefer.
 # Both should be commented out when you submit for
 # testing to save time.
-# list_board = [[1,1,1],[1,1,1],[1,1,1]]
-# board1 = provided.TTTBoard(3, False,list_board)
-#
-# print "Start"
-# t = mm_move(board1, provided.PLAYERX)
-# print "Output:", t
+list_board = [[1,1,1],[1,1,1],[1,1,1]]
+board1 = provided.TTTBoard(3, False,list_board)
+
+print "Start"
+t = mm_move(board1, provided.PLAYERX)
+print "Output:", t
 # provided.play_game(move_wrapper, 1, False)
-poc_ttt_gui.run_gui(3, provided.PLAYERO, move_wrapper, 1, False)
+#poc_ttt_gui.run_gui(3, provided.PLAYERO, move_wrapper, 1, False)
