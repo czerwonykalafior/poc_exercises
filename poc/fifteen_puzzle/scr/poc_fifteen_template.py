@@ -133,17 +133,18 @@ class Puzzle:
         """
         Check whether the puzzle satisfies the specified invariant
         at the given position in the bottom rows of the puzzle (target_row > 1)
+        Travers the rest of the game grid starting from (target_row, target_col) checking if it's solved
         Returns a boolean
         """
 
         tile_zero_pos = self.current_position(0, 0)
-        if tile_zero_pos[0] != target_row or tile_zero_pos[1] != target_col:
+        if tile_zero_pos != (target_row, target_col):
             return False
 
         row = tile_zero_pos[0]
         col = tile_zero_pos[1] + 1
         while row < self._height and col < self._width:
-            if (row, col) != self.current_position(row, col):
+            if not self.solved(row, col):
                 return False
             if col < self._width - 1:
                 col += 1
@@ -164,31 +165,36 @@ class Puzzle:
 
     def go_to_position(self, target_row, target_col, avoid_target=None):
         """
-        Helper function. Moving the zero tile.
-
+        Helper function. Moving the zero tile to given position. If 'avoid_target' given it's gets messy.
+        Maybe later divide it in two functions.
         :type avoid_target: tuple
         :param avoid_target: Not crossing the target. Cyclic move.
-        :param target_col:
-        :param target_row:
+        :param target_col: :param target_row:
         :return: strings: left = 'l', right = 'r', up = 'u', down = 'd'
         """
         result = ''
-
+        assert (target_row, target_col) != avoid_target, "You said I should avoid it"
         while (target_row, target_col) != self.current_position(0, 0):
             move = ''
             zero_tile_pos = self.current_position(0, 0)
             row = target_row - zero_tile_pos[0]
             col = target_col - zero_tile_pos[1]
 
-            if row > 0 and (zero_tile_pos[0] + 1, zero_tile_pos[1]) != avoid_target:
-                move += 'd'
-            elif row < 0 and (zero_tile_pos[0] - 1, zero_tile_pos[1]) != avoid_target:
+            if row < 0 and (zero_tile_pos[0] - 1, zero_tile_pos[1]) != avoid_target:
                 move += 'u'
-            if col > 0 and (zero_tile_pos[0], zero_tile_pos[1] + 1) != avoid_target:
-                move += 'r'
             elif col < 0 and (zero_tile_pos[0], zero_tile_pos[1] - 1) != avoid_target:
                 move += 'l'
-
+            elif col > 0 and (zero_tile_pos[0], zero_tile_pos[1] + 1) != avoid_target:
+                move += 'r'
+            elif row > 0 and (zero_tile_pos[0] + 1, zero_tile_pos[1]) != avoid_target:
+                move += 'd'
+            else:
+                if zero_tile_pos[0] == 0:
+                    self.go_to_position(avoid_target[0] + 1, avoid_target[1], avoid_target)
+                elif zero_tile_pos[0] == avoid_target[0]:
+                    self.go_to_position(avoid_target[0] - 1, avoid_target[1], avoid_target)
+                else:
+                    self.go_to_position(avoid_target[0], avoid_target[1] - 1, avoid_target)
             self.update_puzzle(move)
             result += move
         return result
@@ -211,6 +217,13 @@ class Puzzle:
         go_to_position(target) don't cross the solved tiles
 
         """
+        self.go_to_position(target_row, target_col)
+        assert self.lower_row_invariant(target_row, target_col)
+
+        while not self.solved(target_row, target_col):
+            target_position = self.current_position(target_row, target_col)
+            self.go_to_position(target_position[0], target_position[1])
+
 
         return ""
 
@@ -282,16 +295,28 @@ class Puzzle:
 # Start interactive simulation
 # poc_fifteen_gui.FifteenGUI(Puzzle(4, 4))
 
-i_grid = [[0, 4, 13, 10],
-          [15, 6, 9, 11],
-          [5, 12, 1, 7],
-          [3, 8, 14, 2]]
+i_grid = [[0, 10, 9, 1],
+          [6, 13, 15, 11],
+          [5, 12, 2, 7],
+          [3, 8, 14, 4]]
 
 pzl = Puzzle(4, 4, i_grid)
+pzl.solve_interior_tile(3, 3)
 print pzl
+
 # print pzl.current_position(3, 2)
 # print pzl.lower_row_invariant(0, 0)
 # print pzl.solve_interior_tile(4,4)
 # print pzl.solved(3, 3)
-print pzl.go_to_position(2, 2, (1, 0))
-print pzl
+#
+# for row in range(4):
+#     for col in range(4):
+#         pzl = Puzzle(4, 4, i_grid)
+#         avoid = (pzl.current_position(3, 3))
+#         if (row, col) == avoid:
+#             continue
+#         print (row, col), pzl.go_to_position(row, col, avoid)
+#         print pzl
+
+# print pzl.go_to_position(0, 2, avoid)
+# print pzl
