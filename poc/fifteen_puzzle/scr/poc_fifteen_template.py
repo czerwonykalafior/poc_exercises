@@ -163,7 +163,7 @@ class Puzzle:
 
         return (target_row, target_col) == self.current_position(target_row, target_col)
 
-    def go_to_position(self, target_row, target_col, avoid_target=None):
+    def go_to_p(self, target_row, target_col, avoid_target=None):
         """
         Helper function. Moving the zero tile to given position. If 'avoid_target' given it's gets messy.
         Maybe later divide it in two functions.
@@ -189,7 +189,10 @@ class Puzzle:
             elif row > 0 and (zero_tile_pos[0] + 1, zero_tile_pos[1]) != avoid_target:
                 move += 'd'
             else:
-                if zero_tile_pos[0] == 0:
+                if avoid_target[1] + 1 == self.get_width():
+                    self.go_to_position(avoid_target[0], avoid_target[1] - 1, avoid_target)
+                elif zero_tile_pos[0] == 0:
+                    print self.__str__()
                     self.go_to_position(avoid_target[0] + 1, avoid_target[1], avoid_target)
                 elif zero_tile_pos[0] == avoid_target[0]:
                     self.go_to_position(avoid_target[0] - 1, avoid_target[1], avoid_target)
@@ -197,7 +200,28 @@ class Puzzle:
                     self.go_to_position(avoid_target[0], avoid_target[1] - 1, avoid_target)
             self.update_puzzle(move)
             result += move
+            print result
         return result
+
+    def go_to_target(self, target_row, target_col):
+        move = self.go_to_position(self.current_position(target_row, target_col)[0],\
+                            self.current_position(target_row, target_col)[1])
+        return move
+
+    def go_to_position(self, target_row, target_col, old = None):
+        """
+        Move ...
+        :param target_row:
+        :param target_col:
+        :return:
+        """
+        row_diff =  target_row - self.current_position(0, 0)[0]
+        col_diff = target_col -  self.current_position(0, 0)[1]
+
+        move = 'lr'[row_diff > 0 ] * abs(row_diff) + 'ud'[col_diff > 0 ] * abs(col_diff)
+        self.update_puzzle(move)
+        return move
+
 
     def solve_interior_tile(self, target_row, target_col):
         """
@@ -217,15 +241,34 @@ class Puzzle:
         go_to_position(target) don't cross the solved tiles
 
         """
-        self.go_to_position(target_row, target_col)
-        assert self.lower_row_invariant(target_row, target_col)
+        move = ''
+        t_row = target_row
+        t_col = target_col
 
-        while not self.solved(target_row, target_col):
-            target_position = self.current_position(target_row, target_col)
-            self.go_to_position(target_position[0], target_position[1])
+        move += self.go_to_position(t_row, t_col)
+        assert self.lower_row_invariant(t_row, t_col)
 
+        print self.__str__()
 
-        return ""
+        move += self.go_to_target(t_row, t_col)
+        while not self.solved(t_row, t_col):
+            print self.__str__()
+            if self.current_position(t_row, t_col)[1] != t_col:
+                add_col = t_col - self.current_position(t_row, t_col)[1]
+                move += self.go_to_position(self.current_position(t_row, t_col)[0],\
+                                            self.current_position(t_row, t_col)[1] + add_col, \
+                                            self.current_position(t_row, t_col))
+            else:
+                move += self.go_to_position(self.current_position(t_row, t_col)[0] + 1,\
+                                            self.current_position(t_row, t_col)[1],\
+                                            self.current_position(t_row, t_col))
+            move += self.go_to_target(t_row, t_col)
+
+        move += self.go_to_position(self.current_position(t_row, t_col)[0], self.current_position(t_row, t_col)[1] - 1,\
+                                self.current_position(t_row, t_col))
+        assert self.lower_row_invariant(t_row, t_col - 1)
+
+        return move
 
     def solve_col0_tile(self, target_row):
         """
@@ -295,15 +338,6 @@ class Puzzle:
 # Start interactive simulation
 # poc_fifteen_gui.FifteenGUI(Puzzle(4, 4))
 
-i_grid = [[0, 10, 9, 1],
-          [6, 13, 15, 11],
-          [5, 12, 2, 7],
-          [3, 8, 14, 4]]
-
-pzl = Puzzle(4, 4, i_grid)
-pzl.solve_interior_tile(3, 3)
-print pzl
-
 # print pzl.current_position(3, 2)
 # print pzl.lower_row_invariant(0, 0)
 # print pzl.solve_interior_tile(4,4)
@@ -320,3 +354,12 @@ print pzl
 
 # print pzl.go_to_position(0, 2, avoid)
 # print pzl
+i_grid = [[4, 8, 15, 2],
+          [1, 0, 6, 9],
+          [5, 7, 3, 10],
+          [12, 14, 11, 13]]
+
+pzl = Puzzle(4, 4, i_grid)
+print pzl.go_to_position(3, 3)
+print pzl.go_to_target(3, 3)
+print pzl
