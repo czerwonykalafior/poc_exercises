@@ -204,24 +204,59 @@ class Puzzle:
         return result
 
     def go_to_target(self, target_row, target_col):
+        """
+        Moving to index taken my given tile. e.g '15'
+        :param target_row:
+        :param target_col:
+        :return:
+        """
         move = self.go_to_position(self.current_position(target_row, target_col)[0],\
                             self.current_position(target_row, target_col)[1])
         return move
 
     def go_to_position(self, target_row, target_col, old = None):
         """
-        Move ...
+        Move to given index e.g [3][3]
         :param target_row:
         :param target_col:
         :return:
         """
+
         row_diff =  target_row - self.current_position(0, 0)[0]
         col_diff = target_col -  self.current_position(0, 0)[1]
+        print row_diff, col_diff
 
-        move = 'lr'[row_diff > 0 ] * abs(row_diff) + 'ud'[col_diff > 0 ] * abs(col_diff)
+        move = ''
+        move +=  'ud'[row_diff > 0 ] * abs(row_diff)
+        move += 'lr'[col_diff > 0 ] * abs(col_diff)
         self.update_puzzle(move)
         return move
 
+    def round_tile(self, target_row, target_col, clockwise = False):
+        """
+        Go around with clockwise direction a solving tile.
+        :param target_row:
+        :param target_col:
+        :return:
+        """
+        zero_positnion = self.current_position(0, 0)
+        row = self.current_position(target_row, target_col)[0]
+        col = self.current_position(target_row, target_col)[1]
+        loop = 'rddlluur'
+        if clockwise:
+            loop = 'luurrddl'
+
+        position_order = { (row + 1, col    ): 0,
+                           (row + 1, col + 1): 1,
+                           (row    , col + 1): 2,
+                           (row - 1, col + 1): 3,
+                           (row - 1, col    ): 4,
+                           (row - 1, col - 1): 5,
+                           (row,     col - 1): 6,
+                           (row + 1, col - 1): 7,}
+        move = loop[position_order[zero_positnion]:]
+        self.update_puzzle(move)
+        return move
 
     def solve_interior_tile(self, target_row, target_col):
         """
@@ -354,12 +389,14 @@ class Puzzle:
 
 # print pzl.go_to_position(0, 2, avoid)
 # print pzl
-i_grid = [[4, 8, 15, 2],
-          [1, 0, 6, 9],
-          [5, 7, 3, 10],
-          [12, 14, 11, 13]]
+i_grid = [[4, 8, 13, 0],
+          [1, 3, 2, 15],
+          [5, 7, 13, 10],
+          [12, 14, 11, 9]]
 
 pzl = Puzzle(4, 4, i_grid)
-print pzl.go_to_position(3, 3)
-print pzl.go_to_target(3, 3)
+print pzl
+print pzl.round_tile(3,1, True)
+# print pzl.go_to_position(3, 1)
+# print pzl.go_to_target(3, 3)
 print pzl
