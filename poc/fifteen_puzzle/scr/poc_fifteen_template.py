@@ -163,46 +163,6 @@ class Puzzle:
 
         return (target_row, target_col) == self.current_position(target_row, target_col)
 
-    def go_to_p(self, target_row, target_col, avoid_target=None):
-        """
-        Helper function. Moving the zero tile to given position. If 'avoid_target' given it's gets messy.
-        Maybe later divide it in two functions.
-        :type avoid_target: tuple
-        :param avoid_target: Not crossing the target. Cyclic move.
-        :param target_col: :param target_row:
-        :return: strings: left = 'l', right = 'r', up = 'u', down = 'd'
-        """
-        result = ''
-        assert (target_row, target_col) != avoid_target, "You said I should avoid it"
-        while (target_row, target_col) != self.current_position(0, 0):
-            move = ''
-            zero_tile_pos = self.current_position(0, 0)
-            row = target_row - zero_tile_pos[0]
-            col = target_col - zero_tile_pos[1]
-
-            if row < 0 and (zero_tile_pos[0] - 1, zero_tile_pos[1]) != avoid_target:
-                move += 'u'
-            elif col < 0 and (zero_tile_pos[0], zero_tile_pos[1] - 1) != avoid_target:
-                move += 'l'
-            elif col > 0 and (zero_tile_pos[0], zero_tile_pos[1] + 1) != avoid_target:
-                move += 'r'
-            elif row > 0 and (zero_tile_pos[0] + 1, zero_tile_pos[1]) != avoid_target:
-                move += 'd'
-            else:
-                if avoid_target[1] + 1 == self.get_width():
-                    self.go_to_position(avoid_target[0], avoid_target[1] - 1, avoid_target)
-                elif zero_tile_pos[0] == 0:
-                    print self.__str__()
-                    self.go_to_position(avoid_target[0] + 1, avoid_target[1], avoid_target)
-                elif zero_tile_pos[0] == avoid_target[0]:
-                    self.go_to_position(avoid_target[0] - 1, avoid_target[1], avoid_target)
-                else:
-                    self.go_to_position(avoid_target[0], avoid_target[1] - 1, avoid_target)
-            self.update_puzzle(move)
-            result += move
-            print result
-        return result
-
     def go_to_target(self, target_row, target_col):
         """
         Moving to index taken my given tile. e.g '15'
@@ -210,11 +170,12 @@ class Puzzle:
         :param target_col:
         :return:
         """
-        move = self.go_to_position(self.current_position(target_row, target_col)[0],\
-                            self.current_position(target_row, target_col)[1])
+        tuple_idx_row = self.current_position(target_row, target_col)[0]
+        tuple_idx_col = self.current_position(target_row, target_col)[1]
+        move = self.go_to_position(tuple_idx_row, tuple_idx_col)
         return move
 
-    def go_to_position(self, target_row, target_col, old = None):
+    def go_to_position(self, target_row, target_col):
         """
         Move to given index e.g [3][3]
         :param target_row:
@@ -222,31 +183,29 @@ class Puzzle:
         :return:
         """
 
-        row_diff =  target_row - self.current_position(0, 0)[0]
-        col_diff = target_col -  self.current_position(0, 0)[1]
-        print row_diff, col_diff
+        row_diff = target_row - self.current_position(0, 0)[0]
+        col_diff = target_col - self.current_position(0, 0)[1]
 
         move = ''
-        move +=  'ud'[row_diff > 0 ] * abs(row_diff)
-        move += 'lr'[col_diff > 0 ] * abs(col_diff)
+        move += 'lr'[col_diff > 0] * abs(col_diff)
+        move += 'ud'[row_diff > 0] * abs(row_diff)
         self.update_puzzle(move)
         return move
 
-    def round_tile(self, target_row, target_col, clockwise = False):
+    def round_tile(self, target_row, target_col, clockwise=None):
         """
         Go around with clockwise direction a solving tile.
+        :type clockwise: boolean
         :param target_row:
         :param target_col:
         :return:
         """
-        zero_positnion = self.current_position(0, 0)
+
+        zero_position = self.current_position(0, 0)
         row = self.current_position(target_row, target_col)[0]
         col = self.current_position(target_row, target_col)[1]
-        loop = 'rddlluur'
-        if clockwise:
-            loop = 'luurrddl'
-
-        position_order = { (row + 1, col    ): 0,
+        loop = 'ruullddr'
+        position_order = {(row + 1, col    ): 0,
                            (row + 1, col + 1): 1,
                            (row    , col + 1): 2,
                            (row - 1, col + 1): 3,
@@ -254,7 +213,19 @@ class Puzzle:
                            (row - 1, col - 1): 5,
                            (row,     col - 1): 6,
                            (row + 1, col - 1): 7,}
-        move = loop[position_order[zero_positnion]:]
+
+        if clockwise:
+            loop = 'luurrddl'
+            position_order = { (row + 1, col    ): 0,
+                               (row + 1, col + 1): 7,
+                               (row    , col + 1): 6,
+                               (row - 1, col + 1): 5,
+                               (row - 1, col    ): 4,
+                               (row - 1, col - 1): 3,
+                               (row,     col - 1): 2,
+                               (row + 1, col - 1): 1,}
+
+        move = loop[position_order[zero_position]:]
         self.update_puzzle(move)
         return move
 
@@ -274,34 +245,40 @@ class Puzzle:
         set the row:
         go_to_position(target_is[row - 1], target[col]
         go_to_position(target) don't cross the solved tiles
-
         """
+
         move = ''
-        t_row = target_row
-        t_col = target_col
+        clockwise = False
+        move += self.go_to_position(target_row, target_col)
+        assert self.lower_row_invariant(target_row, target_col)
+        move += self.go_to_position(self.current_position(target_row, target_col)[0], self.current_position(0, 0)[1])
 
-        move += self.go_to_position(t_row, t_col)
-        assert self.lower_row_invariant(t_row, t_col)
+        # column solving
+        # on the left
+        turn = 'urrd'
+        if self.current_position(target_row, target_col)[0] == 0:
+            turn = 'drru'
+        # on the right
+        if self.current_position(0, 0)[1] - self.current_position(target_row, target_col)[1] < 0:
+            turn = 'ulld'
+            if self.current_position(target_row, target_col)[0] == 0:
+                turn = 'dllu'
+                clockwise = True
+        move += self.go_to_target(target_row, target_col)
+        while target_col != self.current_position(target_row, target_col)[1]:
+            move += turn
+            self.update_puzzle(turn)
+            move += self.go_to_target(target_row, target_col)
 
-        print self.__str__()
-
-        move += self.go_to_target(t_row, t_col)
-        while not self.solved(t_row, t_col):
-            print self.__str__()
-            if self.current_position(t_row, t_col)[1] != t_col:
-                add_col = t_col - self.current_position(t_row, t_col)[1]
-                move += self.go_to_position(self.current_position(t_row, t_col)[0],\
-                                            self.current_position(t_row, t_col)[1] + add_col, \
-                                            self.current_position(t_row, t_col))
-            else:
-                move += self.go_to_position(self.current_position(t_row, t_col)[0] + 1,\
-                                            self.current_position(t_row, t_col)[1],\
-                                            self.current_position(t_row, t_col))
-            move += self.go_to_target(t_row, t_col)
-
-        move += self.go_to_position(self.current_position(t_row, t_col)[0], self.current_position(t_row, t_col)[1] - 1,\
-                                self.current_position(t_row, t_col))
-        assert self.lower_row_invariant(t_row, t_col - 1)
+        # row solving
+        if not self.solved(target_row, target_col):
+            move += self.round_tile(target_row, target_col, clockwise)
+            move += self.go_to_target(target_row, target_col)
+            while target_row != self.current_position(target_row, target_col)[0]:
+                move += self.round_tile(target_row, target_col, False)
+                move += self.go_to_target(target_row, target_col)
+        move += self.go_to_position(target_row, target_col - 1)
+        assert self.lower_row_invariant(target_row, target_col - 1)
 
         return move
 
@@ -373,30 +350,15 @@ class Puzzle:
 # Start interactive simulation
 # poc_fifteen_gui.FifteenGUI(Puzzle(4, 4))
 
-# print pzl.current_position(3, 2)
-# print pzl.lower_row_invariant(0, 0)
-# print pzl.solve_interior_tile(4,4)
-# print pzl.solved(3, 3)
-#
-# for row in range(4):
-#     for col in range(4):
-#         pzl = Puzzle(4, 4, i_grid)
-#         avoid = (pzl.current_position(3, 3))
-#         if (row, col) == avoid:
-#             continue
-#         print (row, col), pzl.go_to_position(row, col, avoid)
-#         print pzl
-
-# print pzl.go_to_position(0, 2, avoid)
-# print pzl
-i_grid = [[4, 8, 13, 0],
-          [1, 3, 2, 15],
-          [5, 7, 13, 10],
-          [12, 14, 11, 9]]
+i_grid = [[12, 3, 4,13],
+          [1, 6, 2, 9],
+          [5, 8, 11, 0],
+          [10, 7, 14, 15]]
 
 pzl = Puzzle(4, 4, i_grid)
+
 print pzl
-print pzl.round_tile(3,1, True)
-# print pzl.go_to_position(3, 1)
 # print pzl.go_to_target(3, 3)
+# print pzl.round_tile(3, 3, True)
+print pzl.solve_interior_tile(3, 1)
 print pzl
